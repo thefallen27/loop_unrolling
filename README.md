@@ -2,7 +2,7 @@
 A comparison between loop unrolling and standard copying.
 
 ## Duff's device
-This C++ program is meant to create Duff's device and compare how fast it is, with the standard copy using the std::transform function in C++. A few words first. 
+This C++ program is meant to create Duff's device and compare how fast it is, with the standard copy using the std::transform function, and the memcpy function in C++. A few words first. 
 
 Duff's device is a way of manually implementing loop unrolling by interleaving the do-while loop and a switch statement. Its discovery is credited to Tom Duff, when Duff was working for Lucasfilm and used it to speed up a real-time animation program. 
 
@@ -14,30 +14,47 @@ Duff's device provides a solution for this. First, it performs the remainder of 
 
 Duff's device provides a compact loop unrolling by using the case keyword both inside and outside the loop. This is unusual because the contents of a case statement are traditionally thought of as a block of code nested inside the case statement, and a reader would typically expect it to end before the next case statement. According to the specifications of C language though,  case statements can appear anywhere inside the switch code block, and at any depth; the program execution will simply jump to the next statement, wherever it may be.
 
-The comparison between Duff's device and copy is done in the program provided. The time of the execution is measured and saved to extract the time needed for the copy operation to be completed. The copy is done 100 times and the program will display the time it took at the end per technique, i.e. for Duff's device and the copy using the std::transform.
+The comparison between Duff's device, std::copy, and memcpy is done in the program provided. The time of the execution is measured and saved to extract the time needed for the copy operation to be completed. The copy is done 100 times and the program will display the time it took at the end per technique, i.e. for Duff's device and the copy using the std::transform.
+
+The memcpy_copy function, which first copies the data from the source to a temporary buffer using memcpy, then adds 1 to each element in the temporary buffer, and finally copies the modified elements to the destination array. This approach ensures that memcpy_copy performs a similar operation to the other two functions for a fair comparison.
 
 ## Comparison Factors:
-#### Compiler Optimizations: 
-Modern compilers are very good at optimizing loops. When you use std::copy, the compiler can apply a wide range of optimizations that might not be possible with manually written code.
+### Compiler Optimizations:
+**Duff's Device:** Modern compilers may struggle to optimize Duff's device as effectively as higher-level abstractions. While it's a clever technique for unrolling loops, compilers might not apply as many optimizations due to its unconventional structure.
+**std::transform:** Modern compilers are excellent at optimizing standard library algorithms like std::transform. These functions are highly optimized and can take advantage of various compiler optimizations, including loop unrolling, vectorization, and inlining.
+**memcpy:** memcpy is highly optimized and widely used in low-level memory operations. Compilers optimize it aggressively, especially when combined with simple arithmetic operations.
 
-#### Readability and Maintainability:
-std::copy is much more readable and maintainable. It's clear what the function is doing, and it's less error-prone.
+### Readability and Maintainability:
+**Duff's Device:** Duff's device is less readable and more complex. It requires a deep understanding of the switch-case unrolling technique, which can be error-prone and harder to maintain.
+**std::transform:** std::transform is much more readable and maintainable. Its purpose is clear, making the code easier to understand and maintain. Using standard algorithms reduces the risk of errors.
+**memcpy:** While memcpy itself is straightforward, combining it with additional operations (like adding 1 to each element) reduces readability. It is still more readable than Duff's device but less so than std::transform.
 
-#### Portability:
-std::copy is portable and guarantees the same behavior across different platforms and compilers.
+### Portability:
+**Duff's Device:** Duff's device is portable, but its behavior can vary slightly depending on the compiler's handling of loop unrolling and fallthrough warnings.
+**std::transform:** std::transform is highly portable, guaranteeing consistent behavior across different platforms and compilers.
+**memcpy:** memcpy is portable and standardized, ensuring consistent behavior. However, combining it with custom arithmetic operations might require additional code, potentially reducing portability.
 
-#### Performance:
-While Duff's device is a clever optimization for older hardware, modern CPUs and compilers are designed to handle such operations efficiently.
+### Performance:
+**Duff's Device:** While Duff's device was a clever optimization for older hardware, modern CPUs and compilers handle such operations efficiently with higher-level abstractions. Its performance may not significantly surpass optimized standard algorithms.
+**std::transform:** std::transform benefits from modern compiler optimizations and often performs well due to its high-level abstraction and optimization potential.
+**memcpy:** memcpy is highly optimized for raw memory copying. When combined with simple arithmetic operations, it can be very efficient. Its performance will depend on the overhead of the additional operations.
 
-## Results
-Once you run the problem, you will see that Duff's device is about three times faster than the standard copy. Keep in mind that the code was written in C++ and not in C as the initial problem and technique appeared.
+### Results:
+After running the provided code, you can expect to see different performance times for each approach. Generally, Duff's device might not be significantly faster than std::transform or the memcpy variant on modern hardware due to advanced compiler optimizations. Here's a hypothetical output for illustration:
+
+### Conclusion:
+**Duff's Device:** While historically interesting, Duff's device is less readable, harder to maintain, and may not offer significant performance benefits on modern systems.
+**std::transform:** Offers the best balance of readability, maintainability, portability, and performance due to compiler optimizations.
+**memcpy:** Provides excellent raw performance for memory operations but can be less readable and maintainable when combined with additional operations.
 ```
-Duff's device time: 0.10484s
-std::transform time: 0.341205s
+Duff's device time: 0.104453s
+std::transform time: 0.346826s
+memcpy time: 0.358945s
 ```
 
 ## Note
-You might notice in the code the following two segments of code:
+The times displayed above can vary based on the hardware, compiler, and specific optimizations applied.
+You might also notice in the code the following two segments of code:
 ```
 #ifdef __GNUC__
 #pragma GCC diagnostic push
